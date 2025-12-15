@@ -1,5 +1,6 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+// add import
+import { Link } from 'react-router-dom';
 
 function Header({ username }) {
   return (
@@ -7,11 +8,18 @@ function Header({ username }) {
       <h1 className="text-xl sm:text-2xl font-semibold text-sky-300 truncate">
         Hello, {username} 👋
       </h1>
-      <Link to="/addHabit">
-        <button className="px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg bg-sky-500 text-slate-900 font-medium text-sm sm:text-base shadow-sm hover:bg-sky-600 hover:shadow-md transition-colors duration-200">
-          + Add Habit
-        </button>
-      </Link>
+      <div className="flex gap-3">
+        <Link to="/compare">
+          <button className="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-200 font-medium text-sm hover:bg-slate-600 transition">
+            Compare
+          </button>
+        </Link>
+        <Link to="/addHabit">
+          <button className="px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg bg-sky-500 text-slate-900 font-medium text-sm sm:text-base shadow-sm hover:bg-sky-600 hover:shadow-md transition-colors duration-200">
+            + Add Habit
+          </button>
+        </Link>
+      </div>
     </header>
   );
 }
