@@ -36,6 +36,19 @@ export default function AddHabit() {
   const start = toLocalDate(startDate);
   const today = new Date();
 
+  const Input = ({ label, value, onChange, placeholder = "" }) => {
+    return (
+      <div className="input-group">
+        {label && <label>{label}</label>}
+        <input
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+        />
+      </div>
+    );
+  };
+
   const daysInMonth = Array.from(
     { length: getDaysInMonth(selectedYear, selectedMonth - 1) },
     (_, i) => {

@@ -12,6 +12,7 @@ function HabitForm() {
       <input
         type="text"
         placeholder="Enter habit name"
+        label="name"
         value={name}
         onChange={(e) => setName(e.target.value)}
         className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
