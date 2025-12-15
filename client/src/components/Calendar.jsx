@@ -10,7 +10,7 @@ function Calendar({habits}) {
 
   const daysInMonth = Array.from({length: lastDay}, (_, i) => i + 1);
 
-  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const months = ["Januaryyy", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const days = Array(firstDayOfWeek).fill(null).concat(daysInMonth);
 
   const prevMonth = () => {
