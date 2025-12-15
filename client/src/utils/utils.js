@@ -9,11 +9,12 @@ export const isHabitDue = (habit, date) => {
       return true;
     case "weekly":
     case "custom":
+      // Note: date.getDay() => 0 is Sunday, 1 is Monday, ... 6 is Saturday
       return Array.isArray(habit.freq.days) && habit.freq.days.includes(date.getDay());
     default:
       return false;
   }
-}
+};
 
 export const formatDate = (input) => {
   // Accepts Date or ISO-like string, returns YYYY-MM-DD
@@ -31,7 +32,7 @@ export const formatDate = (input) => {
   } catch {
     return null;
   }
-}
+};
 
 /**
  * Check if all prerequisites for `habit` are fulfilled on `date`.
@@ -68,7 +69,8 @@ export const detectCycle = (candidateId, candidatePrereqs = [], habits = []) => 
   habits.forEach(h => {
     adj[h.id] = Array.isArray(h.prerequisites) ? [...h.prerequisites] : [];
   });
-  adj[candidateId] = [...candidatePrereqs];
+  // Overwrite or create candidate node edges as proposed
+  adj[candidateId] = Array.isArray(candidatePrereqs) ? [...candidatePrereqs] : [];
 
   const visited = new Set();
   const recStack = new Set();
@@ -83,15 +85,79 @@ export const detectCycle = (candidateId, candidatePrereqs = [], habits = []) => 
         if (!visited.has(neigh) && dfs(neigh)) return true;
         else if (recStack.has(neigh)) return true;
       }
+
+      recStack.delete(node);
     }
-    recStack.delete(node);
     return false;
   };
 
   // Check all nodes for cycle
-  const nodes = Object.keys(adj);
-  for (const n of nodes) {
+  for (const n of Object.keys(adj)) {
     if (!visited.has(n) && dfs(n)) return true;
   }
   return false;
+};
+
+/**
+ * Compute completion rate over the last `daysBack` days.
+ * Counts only dates where the habit is due and prerequisites are met.
+ */
+export const computeCompletionRate = (habit, habits, daysBack = 30) => {
+  if (!habit) return { eligible: 0, completed: 0, rate: 0 };
+
+  const today = new Date();
+  let eligible = 0;
+  let completed = 0;
+
+  for (let i = 0; i < daysBack; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateStr = formatDate(d);
+
+    // is the habit scheduled/due this day?
+    if (!isHabitDue(habit, d)) continue;
+
+    // is it eligible (prereqs met for that date)?
+    if (!isPrerequisitesMet(habit, habits, d)) continue;
+
+    eligible++;
+    if (Array.isArray(habit.progress) && habit.progress.includes(dateStr)) {
+      completed++;
+    }
+  }
+
+  const rate = eligible === 0 ? 0 : (completed / eligible);
+  return { eligible, completed, rate };
+};
+
+/**
+ * Get weekly series (percentage completed per week) for the last `weeks` weeks.
+ * Returns an array oldest->newest of weekly completion percentages.
+ */
+export const computeWeeklySeries = (habit, habits, weeks = 4) => {
+  const today = new Date();
+  const oneWeek = 7;
+  const series = [];
+
+  for (let w = 0; w < weeks; w++) {
+    let eligible = 0;
+    let completed = 0;
+    for (let d = 0; d < oneWeek; d++) {
+      const dayOffset = w * oneWeek + d;
+      const date = new Date(today);
+      date.setDate(today.getDate() - dayOffset);
+      const dateStr = formatDate(date);
+
+      if (!isHabitDue(habit, date)) continue;
+      if (!isPrerequisitesMet(habit, habits, date)) continue;
+
+      eligible++;
+      if (Array.isArray(habit.progress) && habit.progress.includes(dateStr)) completed++;
+    }
+    const pct = eligible === 0 ? 0 : (completed / eligible);
+    // record from newest to oldest; we'll reverse at the end so series go oldest->newest
+    series.push(pct);
+  }
+
+  return series.reverse(); // oldest -> newest
 };
